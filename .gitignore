@@ -13,6 +13,9 @@ target/
 *.iml
 *.ipr
 
+journal.json
+*.zip
+
 ### Eclipse ###
 .apt_generated
 .classpath

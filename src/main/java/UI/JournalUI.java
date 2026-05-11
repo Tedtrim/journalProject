@@ -1,52 +1,51 @@
 package UI;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import data.JournalEntry;
+import data.JournalRepository;
+import data.JournalStore;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.geometry.Insets;
 
 public class JournalUI extends Application {
 
+    public JournalStore store = new JournalStore();
+    public JournalRepository repo = new JournalRepository("journal.json");
+
+
     @Override
     public void start(Stage stage) {
-        Label entryLabel = new Label("Enter Journal Entry");
-        TextArea entryArea = new TextArea();
-        entryArea.setWrapText(true);
-        Label nameLabel = new Label("");
-        Map<LocalDate, JournalEntry> entries = new HashMap<>();
 
-        Button button = new Button("Save Entry");
-        button.setOnAction(e -> {
-            String text = entryArea.getText();
+        store.setEntryMap(repo.load());
+        WriteTab writeTab = new WriteTab(store, repo);
+        ReadTab readTab = new ReadTab(store, repo);
 
-            if (text.isEmpty()) {
-                nameLabel.setText("Please submit entry");
-                return;
-            }
-            LocalDate today = LocalDate.now();
-            JournalEntry entry = new JournalEntry(today, text);
+        VBox writeLayout = writeTab.getLayout();
+        HBox readLayout = readTab.getLayout();
 
-            entries.put(today, entry);
-            nameLabel.setText("Entry saved for " + today);
-            entryArea.clear();
-        });
+        Tab submitEntries = new Tab("Submit Entries");
+        submitEntries.setContent(writeLayout);
 
-        VBox layout = new VBox(10);
-        layout.setPadding(new Insets(10));
-        layout.getChildren().addAll(
-                entryLabel,
-                entryArea,
-                button,
-                nameLabel
-        );
+        Tab readPastEntries = new Tab("Read Previous Entries");
+        readPastEntries.setContent(readLayout);
 
-        Scene scene = new Scene(layout, 300, 200);
+        submitEntries.setClosable(false);
+        readPastEntries.setClosable(false);
+
+        TabPane tabPane = new TabPane();
+        tabPane.getTabs().addAll(submitEntries, readPastEntries);
+
+        Scene scene = new Scene(tabPane, 700, 500);
+
         stage.setScene(scene);
         stage.show();
     }
